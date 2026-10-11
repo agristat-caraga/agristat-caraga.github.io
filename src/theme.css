@@ -338,7 +338,8 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 }
 @media (max-width: 600px) {
   .auth-content { padding: 19px 18px 16px; }
-  .auth-region-orbit { top: 8px; right: 2px; width: clamp(240px, 64vw, 340px); opacity: .42; }
+  .auth-region-orbit { top: 8px; right: 2px; width: clamp(180px, 50vw, 230px); opacity: .42; }
+  .auth-region-map { width: 88%; height: 88%; transform: translateX(28px); }
   .auth-mobile-brand { margin-bottom: 28px; }
   .auth-heading h1 { font-size: 31px; }
   .registration-form { max-height: 62vh; }
