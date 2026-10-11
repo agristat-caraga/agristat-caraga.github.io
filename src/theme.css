@@ -309,7 +309,8 @@ button:disabled { cursor: not-allowed; opacity: .55; }
   .auth-layout { display: block; height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible; }
   .auth-brand-panel { display: none; }
   .auth-content { height: auto; min-height: 100vh; min-height: 100dvh; justify-content: center; padding: 23px 24px 18px; }
-  .auth-tab-content { height: auto; }
+  .auth-tab-content { height: min(440px, max(260px, 40vh)); overflow-y: auto; }
+  .registration-form { max-height: 100%; }
   .auth-bottom-banner { width: 100%; max-width: 520px; height: auto; margin: 18px auto 0; }
   .auth-region-orbit { top: 10px; right: 4px; width: clamp(240px, 54vw, 360px); opacity: .48; }
   .auth-region-map { width: 95%; height: 95%; transform: translateX(60px); }
@@ -342,7 +343,7 @@ button:disabled { cursor: not-allowed; opacity: .55; }
   .auth-region-map { width: 88%; height: 88%; transform: translateX(28px); }
   .auth-mobile-brand { margin-bottom: 28px; }
   .auth-heading h1 { font-size: 31px; }
-  .registration-form { max-height: 62vh; }
+  .registration-form { max-height: 100%; }
   .topbar { height: 58px; padding-inline: 13px; }
   .breadcrumbs { gap: 6px; font-size: 8px; }
   .topbar-account .user-avatar { width: 31px; height: 31px; }
