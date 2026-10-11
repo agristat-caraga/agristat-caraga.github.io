@@ -310,7 +310,7 @@ button:disabled { cursor: not-allowed; opacity: .55; }
   .auth-brand-panel { display: none; }
   .auth-content { height: auto; min-height: 100vh; min-height: 100dvh; justify-content: flex-start; padding: clamp(120px, 18vh, 190px) 24px 18px; }
   .auth-tab-content { height: auto; overflow: visible; }
-  .registration-form { max-height: none; overflow: visible; }
+  .registration-form { max-height: none; overflow: visible; padding-right: 0; }
   .auth-bottom-banner { width: 100%; max-width: 520px; height: auto; margin: 18px auto 0; }
   .auth-region-orbit { top: 10px; right: 4px; width: clamp(240px, 54vw, 360px); opacity: .48; }
   .auth-region-map { width: 95%; height: 95%; transform: translateX(60px); }
