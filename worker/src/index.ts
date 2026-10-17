@@ -161,7 +161,7 @@ function registrationUsername(office: string, province: string, municipality: st
   if (office === 'mao' && province === 'Agusan del Norte' && municipality === 'Buenavista') return `mao-adn.${surname}`
   if (office === 'mao') return `mao-${slug(municipality)}.${surname}`
   if (office === 'pao' && province === 'Agusan del Norte') return `mao-adn.${surname}`
-  if (office === 'pcmo' && province === 'Agusan del Norte') return `pcmo-adn.${surname}`
+  if (office === 'pcmo') return `pcmo-${provinceCodes[province] ?? slug(province)}.${surname}`
   const designatedPrefix = designatedPrefixes[office]?.[designation]
   if (designatedPrefix) return `${designatedPrefix}.${surname}`
   if (office === 'pao' || office === 'pcmo') return `${office}-${slug(province)}.${surname}`
