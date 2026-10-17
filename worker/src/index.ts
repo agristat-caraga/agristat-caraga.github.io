@@ -9,12 +9,12 @@ const municipalities: Record<string, string[]> = {
   'Surigao del Sur': ['Barobo', 'Bayabas', 'City of Bislig', 'Cagwait', 'Cantilan', 'Carmen', 'Carrascal', 'Cortes', 'Hinatuan', 'Lanuza', 'Lianga', 'Lingig', 'Madrid', 'Marihatag', 'San Agustin', 'San Miguel', 'Tagbina', 'Tago', 'City of Tandag'],
   'Province of Dinagat Islands': ['Basilisa', 'Cagdianao', 'Dinagat', 'Libjo', 'Loreto', 'San Jose', 'Tubajon'],
 }
-interface Office { name: string; abbreviation: string; scope: 'province' | 'municipality' | 'designated'; options?: string[]; usernamePrefix?: string }
+interface Office { name: string; abbreviation: string; scope: 'province' | 'municipality' | 'designated'; options?: string[]; usernamePrefix?: string; aliases?: string[] }
 const offices: Office[] = [
   { name: 'Agricultural Program Coordinating Office', abbreviation: 'apco', scope: 'province' },
   { name: 'Corn Program', abbreviation: 'cp', scope: 'designated', options: ['Regional Corn Program Alternate Coordinator', 'Regional Corn Program Coordinator'] },
   { name: 'Fisheries and Aquatic Resources', abbreviation: 'far', scope: 'designated', options: ['Regional Fisheries and Aquatic Resources Alternate Coordinator', 'Regional Fisheries and Aquatic Resources Coordinator'] },
-  { name: 'High Value Crop Development Program', abbreviation: 'hvcdp', scope: 'designated', options: ['Regional High Value Crop Development Program Alternate Coordinator', 'Regional High Value Crop Development Program Coordinator'] },
+  { name: 'High Value Crops Development Program', abbreviation: 'hvcdp', scope: 'designated', aliases: ['High Value Crop Development Program'], options: ['Regional High Value Crops Development Program Alternate Coordinator', 'Regional High Value Crops Development Program Coordinator'] },
   { name: 'Livestock Program', abbreviation: 'lp', scope: 'designated', options: ['Regional Livestock Program Alternate Coordinator', 'Regional Livestock Program Coordinator'] },
   { name: 'Municipal Agriculture Office', abbreviation: 'mao', scope: 'municipality' },
   { name: 'Provincial Agriculture Office', abbreviation: 'pao', scope: 'province' },
@@ -121,11 +121,51 @@ function generatedPassword() {
   return Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) => alphabet[byte % alphabet.length]).join('')
 }
 function slug(value: string) { return value.normalize('NFKD').replace(/[\u0300-\u036f]/gu, '').toLowerCase().replace(/[^a-z0-9]+/gu, '.').replace(/^\.+|\.+$/gu, '') || 'user' }
-function registrationUsername(office: string, province: string, municipality: string, lastName: string, usernamePrefix = office) {
+function registrationUsername(office: string, province: string, municipality: string, designation: string, lastName: string) {
   const surname = slug(lastName)
+  const provinceCodes: Record<string, string> = {
+    'Agusan del Norte': 'adn',
+    'Agusan del Sur': 'ads',
+    'Surigao del Norte': 'sdn',
+    'Surigao del Sur': 'sds',
+    'Province of Dinagat Islands': 'pdi',
+  }
+  const designatedPrefixes: Record<string, Record<string, string>> = {
+    cp: {
+      'Regional Corn Program Alternate Coordinator': 'corn-pac',
+      'Regional Corn Program Coordinator': 'corn-pc',
+    },
+    rp: {
+      'Regional Rice Program Alternate Coordinator': 'rice-pac',
+      'Regional Rice Program Coordinator': 'rice-pc',
+    },
+    lp: {
+      'Regional Livestock Program Alternate Coordinator': 'livestock-pac',
+      'Regional Livestock Program Coordinator': 'livestock-pc',
+    },
+    hvcdp: {
+      'Regional High Value Crops Development Program Alternate Coordinator': 'hvcdp-pac',
+      'Regional High Value Crops Development Program Coordinator': 'hvcdp-pc',
+    },
+    far: {
+      'Regional Fisheries and Aquatic Resources Alternate Coordinator': 'far-pac',
+      'Regional Fisheries and Aquatic Resources Coordinator': 'far-ac',
+    },
+    ras: {
+      'Regional Alternate Focal Person': 'rag-afp',
+      'Regional Focal Person': 'rag-fp',
+    },
+  }
+
+  if (office === 'apco') return `apco-${provinceCodes[province] ?? slug(province)}.${surname}`
+  if (office === 'mao' && province === 'Agusan del Norte' && municipality === 'Buenavista') return `mao-adn.${surname}`
   if (office === 'mao') return `mao-${slug(municipality)}.${surname}`
-  if (office === 'apco' || office === 'pao' || office === 'pcmo') return `${office}-${slug(province)}.${surname}`
-  return `${usernamePrefix}.${surname}`
+  if (office === 'pao' && province === 'Agusan del Norte') return `mao-adn.${surname}`
+  if (office === 'pcmo' && province === 'Agusan del Norte') return `pcmo-adn.${surname}`
+  const designatedPrefix = designatedPrefixes[office]?.[designation]
+  if (designatedPrefix) return `${designatedPrefix}.${surname}`
+  if (office === 'pao' || office === 'pcmo') return `${office}-${slug(province)}.${surname}`
+  return `${office}.${surname}`
 }
 function fullName(user: UserRow) { return [user.first_name, user.middle_name, user.last_name].filter(Boolean).join(' ') + (user.suffix ? `, ${user.suffix}` : '') }
 function publicUser(user: UserRow) {
@@ -170,9 +210,10 @@ async function register(request: Request, env: Env) {
   const lastName = required(body.lastName, 'Last name')
   const suffix = typeof body.suffix === 'string' ? body.suffix.trim().slice(0, 20) : ''
   const position = required(body.position, 'Position')
-  const office = required(body.office, 'Office')
-  const selected = offices.find((item) => item.name === office)
+  const requestedOffice = required(body.office, 'Office')
+  const selected = offices.find((item) => item.name === requestedOffice || item.aliases?.includes(requestedOffice))
   if (!selected) throw new HttpError(400, 'Choose a valid Caraga office.')
+  const office = selected.name
   const province = selected.scope === 'designated' ? '' : required(body.province, 'Province')
   if (province && !provinces.includes(province)) throw new HttpError(400, 'Choose a valid Caraga province.')
   const municipality = selected.scope === 'municipality' ? required(body.municipality, 'Municipality') : ''
@@ -184,7 +225,7 @@ async function register(request: Request, env: Env) {
   if (await env.DB.prepare('SELECT id FROM users WHERE email = ? COLLATE NOCASE LIMIT 1').bind(email).first<{ id: string }>()) throw new HttpError(409, 'An account with this email address already exists.')
   const location = selected.scope === 'municipality' ? `${municipality}, ${province}` : province
   const designation = `${selected.abbreviation.toUpperCase()} - ${selected.scope === 'designated' ? designated : location}`
-  const base = registrationUsername(selected.abbreviation, province, municipality, lastName, selected.usernamePrefix)
+  const base = registrationUsername(selected.abbreviation, province, municipality, designated, lastName)
   let username = base
   for (let number = 2; await env.DB.prepare('SELECT id FROM users WHERE username = ? COLLATE NOCASE LIMIT 1').bind(username).first<{ id: string }>(); number += 1) username = `${base}${number}`
   const initialPassword = generatedPassword()

@@ -13,7 +13,7 @@ export const offices: Office[] = [
   { name: 'Agricultural Program Coordinating Office', abbreviation: 'apco', scope: 'province' },
   { name: 'Corn Program', abbreviation: 'cp', scope: 'designated', options: ['Regional Corn Program Alternate Coordinator', 'Regional Corn Program Coordinator'] },
   { name: 'Fisheries and Aquatic Resources', abbreviation: 'far', scope: 'designated', options: ['Regional Fisheries and Aquatic Resources Alternate Coordinator', 'Regional Fisheries and Aquatic Resources Coordinator'] },
-  { name: 'High Value Crop Development Program', abbreviation: 'hvcdp', scope: 'designated', options: ['Regional High Value Crop Development Program Alternate Coordinator', 'Regional High Value Crop Development Program Coordinator'] },
+  { name: 'High Value Crops Development Program', abbreviation: 'hvcdp', scope: 'designated', aliases: ['High Value Crop Development Program'], options: ['Regional High Value Crops Development Program Alternate Coordinator', 'Regional High Value Crops Development Program Coordinator'] },
   { name: 'Livestock Program', abbreviation: 'lp', scope: 'designated', options: ['Regional Livestock Program Alternate Coordinator', 'Regional Livestock Program Coordinator'] },
   { name: 'Municipal Agriculture Office', abbreviation: 'mao', scope: 'municipality' },
   { name: 'Provincial Agriculture Office', abbreviation: 'pao', scope: 'province' },
